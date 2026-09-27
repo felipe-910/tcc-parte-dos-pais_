@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adicionar meta — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <div class="child-topbar">
+    <a class="back" href="metas.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 class="sticker-heading"><span class="sticker-line on-green">Adicionar meta</span></h1>
+    <span style="width:20px"></span>
+  </div>
+
+  <div class="child-body">
+    <div class="step-indicator">
+      <div class="step-node">
+        <div class="step-circle active" id="circulo1">1</div>
+        <span class="step-label active">Meta</span>
+      </div>
+      <div class="step-line" id="linha1"></div>
+      <div class="step-node">
+        <div class="step-circle" id="circulo2">2</div>
+        <span class="step-label" id="label2">Recompensa</span>
+      </div>
+    </div>
+
+    <!-- Passo 1: Meta -->
+    <section id="passo1">
+      <label class="form-label" for="tituloMeta">Qual é a meta?</label>
+      <input class="text-input" id="tituloMeta" type="text" placeholder="">
+
+      <label class="form-label" for="descMeta">Descrição da meta (Opcional)</label>
+      <textarea class="textarea-input" id="descMeta"></textarea>
+
+      <p class="form-label" style="margin-bottom:2px;">Cor da meta</p>
+      <p class="form-sub">Escolha uma cor para identificar a sua meta</p>
+      <div class="color-grid" id="colorGrid" style="margin-bottom:26px;">
+        <button class="color-swatch selected" style="background:#f2726c" data-cor="#f2726c" type="button" aria-label="Vermelho"></button>
+        <button class="color-swatch" style="background:#f4a53b" data-cor="#f4a53b" type="button" aria-label="Laranja"></button>
+        <button class="color-swatch" style="background:#f7d55e" data-cor="#f7d55e" type="button" aria-label="Amarelo"></button>
+        <button class="color-swatch" style="background:#6fa981" data-cor="#6fa981" type="button" aria-label="Verde"></button>
+        <button class="color-swatch" style="background:#5b5ea6" data-cor="#5b5ea6" type="button" aria-label="Azul"></button>
+        <button class="color-swatch" style="background:#b0699e" data-cor="#b0699e" type="button" aria-label="Roxo"></button>
+        <button class="color-swatch" style="background:#9cd1e0" data-cor="#9cd1e0" type="button" aria-label="Azul claro"></button>
+        <button class="color-swatch" style="background:#f2a6a2" data-cor="#f2a6a2" type="button" aria-label="Rosa"></button>
+        <button class="color-swatch" style="background:#e6c199" data-cor="#e6c199" type="button" aria-label="Bege"></button>
+        <button class="color-swatch" style="background:#f7e6a3" data-cor="#f7e6a3" type="button" aria-label="Amarelo claro"></button>
+        <button class="color-swatch" style="background:#9bc7a0" data-cor="#9bc7a0" type="button" aria-label="Verde claro"></button>
+        <button class="color-swatch" style="background:#9098cc" data-cor="#9098cc" type="button" aria-label="Roxo claro"></button>
+        <button class="color-swatch" style="background:#dcb3d9" data-cor="#dcb3d9" type="button" aria-label="Lilás"></button>
+        <button class="color-swatch" style="background:#ffffff;border:1.5px solid var(--border)" data-cor="#ffffff" type="button" aria-label="Branco"></button>
+      </div>
+
+      <button class="cta" id="proximoBtn" type="button">Próximo</button>
+    </section>
+
+    <!-- Passo 2: Recompensa -->
+    <section id="passo2" hidden>
+      <label class="form-label" for="recompensaMeta">Qual será a recompensa?</label>
+      <p class="form-sub">Escolha uma recompensa que motive a criança!</p>
+      <input class="text-input" id="recompensaMeta" type="text" placeholder="" style="margin-bottom:24px;">
+
+      <p class="form-label" style="margin-bottom:12px;">Sugestões</p>
+      <div class="reward-suggestions" id="rewardSuggestions">
+        <button class="reward-card" style="background:#f2726c" data-recompensa="Bombom" type="button">
+          <img src="https://api.iconify.design/mdi:candy.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Bombom</span>
+        </button>
+        <button class="reward-card" style="background:#6fa981" data-recompensa="Livro novo" type="button">
+          <img src="https://api.iconify.design/mdi:book-open-variant.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Livro novo</span>
+        </button>
+        <button class="reward-card" style="background:#5b5ea6" data-recompensa="Adesivos" type="button">
+          <img src="https://api.iconify.design/mdi:sticker-emoji.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Adesivos</span>
+        </button>
+        <button class="reward-card" style="background:#f4a53b" data-recompensa="Brinquedos" type="button">
+          <img src="https://api.iconify.design/mdi:toy-brick.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Brinquedos</span>
+        </button>
+        <button class="reward-card" style="background:#f2a6a2" data-recompensa="Sorvete" type="button">
+          <img src="https://api.iconify.design/mdi:ice-cream.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Sorvete</span>
+        </button>
+        <button class="reward-card" style="background:#9cd1e0" data-recompensa="Passeio no parque" type="button">
+          <img src="https://api.iconify.design/mdi:slide.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Passeio no parque</span>
+        </button>
+        <button class="reward-card" style="background:#b0699e" data-recompensa="Filme em família" type="button">
+          <img src="https://api.iconify.design/mdi:movie-open.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Filme em família</span>
+        </button>
+        <button class="reward-card" style="background:#9bc7a0" data-recompensa="Tempo extra de jogo" type="button">
+          <img src="https://api.iconify.design/mdi:gamepad-variant.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Tempo extra de jogo</span>
+        </button>
+        <button class="reward-card" style="background:#e6c199" data-recompensa="Passeio de bicicleta" type="button">
+          <img src="https://api.iconify.design/mdi:bike.svg?color=%23ffffff" width="28" height="28" alt="">
+          <span>Passeio de bicicleta</span>
+        </button>
+      </div>
+
+      <button class="cta" id="salvarMetaBtn" type="button">Salvar meta</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+  import { addMeta } from './metas.js';
+
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) window.location.href = 'home.html';
+  const filho = raw ? JSON.parse(raw) : null;
+
+  let corSelecionada = '#f2726c';
+  document.querySelectorAll('.color-swatch').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach((s) => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      corSelecionada = sw.dataset.cor;
+    });
+  });
+
+  const recompensaInput = document.getElementById('recompensaMeta');
+  document.querySelectorAll('.reward-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.reward-card').forEach((c) => c.classList.remove('selected'));
+      card.classList.add('selected');
+      recompensaInput.value = card.dataset.recompensa;
+    });
+  });
+  recompensaInput.addEventListener('input', () => {
+    const valor = recompensaInput.value.trim();
+    document.querySelectorAll('.reward-card').forEach((c) => {
+      c.classList.toggle('selected', c.dataset.recompensa === valor);
+    });
+  });
+
+  const passo1 = document.getElementById('passo1');
+  const passo2 = document.getElementById('passo2');
+  const circulo1 = document.getElementById('circulo1');
+  const circulo2 = document.getElementById('circulo2');
+  const linha1 = document.getElementById('linha1');
+  const label2 = document.getElementById('label2');
+
+  document.getElementById('proximoBtn').addEventListener('click', () => {
+    const titulo = document.getElementById('tituloMeta').value.trim();
+    if (!titulo) {
+      showToast('Digite qual é a meta.');
+      return;
+    }
+    passo1.hidden = true;
+    passo2.hidden = false;
+    circulo1.classList.remove('active');
+    circulo2.classList.add('active');
+    linha1.classList.add('active');
+    label2.classList.add('active');
+  });
+
+  document.getElementById('salvarMetaBtn').addEventListener('click', async () => {
+    const titulo = document.getElementById('tituloMeta').value.trim();
+    const descricao = document.getElementById('descMeta').value.trim();
+    const recompensa = document.getElementById('recompensaMeta').value.trim();
+    if (!recompensa) {
+      showToast('Digite a recompensa da meta.');
+      return;
+    }
+    if (!filho) return;
+    try {
+      await addMeta({ filhoId: filho.id, titulo, descricao, cor: corSelecionada, recompensa });
+      showToast('Meta criada com sucesso!');
+      setTimeout(() => { window.location.href = 'metas.html'; }, 800);
+    } catch (err) {
+      console.error(err);
+      showToast(err.code === 'permission-denied'
+        ? 'Sem permissão para salvar (verifique as regras do Firestore).'
+        : `Não foi possível salvar a meta. ${err.message || ''}`);
+    }
+  });
+</script>
+</body>
+</html>

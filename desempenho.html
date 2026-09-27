@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Desempenho — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <div class="child-topbar">
+    <a class="back" href="crianca.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 class="sticker-heading"><span class="sticker-line on-green">Desempenho</span></h1>
+    <span style="width:20px"></span>
+  </div>
+
+  <div class="child-body">
+    <div class="profile-mini">
+      <div class="kid-avatar" id="kidAvatar"></div>
+      <div class="kid-info">
+        <span class="kid-name" id="kidNome">—</span>
+        <div class="level-row">
+          <span class="level-label" id="kidNivel">Nível 1</span>
+          <span class="level-points" id="kidPontos">0/500pts</span>
+        </div>
+        <div class="level-bar-track"><div class="level-bar-fill" id="kidBarra" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Jogos</h2>
+    <p class="section-sub">Mais recentes</p>
+
+    <div class="sort-row">
+      <button class="sort-btn active" data-sort="asc" type="button" aria-label="Ordem crescente">&#8593;</button>
+      <button class="sort-btn" data-sort="desc" type="button" aria-label="Ordem decrescente">&#8595;</button>
+      <button class="sort-btn" data-sort="az" type="button" aria-label="A a Z">A</button>
+      <button class="sort-btn" data-sort="za" type="button" aria-label="Z a A">Z</button>
+    </div>
+
+    <div id="gamesList"></div>
+    <p class="empty-note" id="emptyNote">Nenhum jogo jogado ainda.</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) {
+    window.location.href = 'home.html';
+  }
+  const filho = raw ? JSON.parse(raw) : null;
+  if (filho) {
+    document.getElementById('kidNome').textContent = filho.nome;
+    if (filho.avatar) {
+      document.getElementById('kidAvatar').style.backgroundImage = `url('avatars/avatar${filho.avatar}.jpg')`;
+    }
+    if (filho.cor) {
+      document.querySelector('.profile-mini').style.background = filho.cor;
+    }
+  }
+
+  document.querySelectorAll('.sort-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Ainda não existe histórico de jogos registrado — a lista fica vazia até isso existir.
+</script>
+</body>
+</html>

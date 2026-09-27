@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Configurações — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <div class="child-topbar">
+    <a class="back" href="crianca.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 class="sticker-heading"><span class="sticker-line on-green">Configurações</span></h1>
+    <span style="width:20px"></span>
+  </div>
+
+  <div class="child-body">
+    <div class="profile-mini" style="margin-bottom:20px;">
+      <div class="kid-avatar" id="kidAvatar"></div>
+      <div class="kid-info">
+        <span class="kid-name" id="kidNome">—</span>
+        <span class="kid-age" id="kidIdade">—</span>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <p class="settings-card-title">Cor principal</p>
+      <div class="color-grid" id="colorGrid">
+        <button class="color-swatch" style="background:#f2726c" data-cor="#f2726c" type="button" aria-label="Vermelho"></button>
+        <button class="color-swatch" style="background:#f4a53b" data-cor="#f4a53b" type="button" aria-label="Laranja"></button>
+        <button class="color-swatch" style="background:#f7d55e" data-cor="#f7d55e" type="button" aria-label="Amarelo"></button>
+        <button class="color-swatch" style="background:#6fa981" data-cor="#6fa981" type="button" aria-label="Verde"></button>
+        <button class="color-swatch" style="background:#5b5ea6" data-cor="#5b5ea6" type="button" aria-label="Azul"></button>
+        <button class="color-swatch" style="background:#b0699e" data-cor="#b0699e" type="button" aria-label="Roxo"></button>
+        <button class="color-swatch" style="background:#9cd1e0" data-cor="#9cd1e0" type="button" aria-label="Azul claro"></button>
+        <button class="color-swatch" style="background:#f2a6a2" data-cor="#f2a6a2" type="button" aria-label="Rosa"></button>
+        <button class="color-swatch" style="background:#e6c199" data-cor="#e6c199" type="button" aria-label="Bege"></button>
+        <button class="color-swatch" style="background:#f7e6a3" data-cor="#f7e6a3" type="button" aria-label="Amarelo claro"></button>
+        <button class="color-swatch" style="background:#9bc7a0" data-cor="#9bc7a0" type="button" aria-label="Verde claro"></button>
+        <button class="color-swatch" style="background:#9098cc" data-cor="#9098cc" type="button" aria-label="Roxo claro"></button>
+        <button class="color-swatch" style="background:#dcb3d9" data-cor="#dcb3d9" type="button" aria-label="Lilás"></button>
+        <button class="color-swatch" style="background:#bfe3e8" data-cor="#bfe3e8" type="button" aria-label="Ciano claro"></button>
+      </div>
+    </div>
+
+    <div class="settings-list">
+      <button class="settings-btn" id="editarBtn" type="button">
+        <span class="settings-icon"><img class="icon-img" src="https://api.iconify.design/mdi:account-edit.svg?color=%23222222" width="18" height="18" alt=""></span>
+        Editar informações
+      </button>
+      <button class="settings-btn danger" id="excluirBtn" type="button">
+        <span class="settings-icon"><img class="icon-img" src="https://api.iconify.design/mdi:delete.svg?color=%237a1f1a" width="18" height="18" alt=""></span>
+        Excluir conta
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+  import { updateFilho, deleteFilho } from './filhos.js';
+
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) window.location.href = 'home.html';
+  const filho = raw ? JSON.parse(raw) : null;
+
+  if (filho) {
+    document.getElementById('kidNome').textContent = filho.nome;
+    document.getElementById('kidIdade').textContent = `${filho.idade} anos`;
+    if (filho.avatar) {
+      document.getElementById('kidAvatar').style.backgroundImage = `url('avatars/avatar${filho.avatar}.jpg')`;
+    }
+    if (filho.cor) {
+      document.querySelector('.profile-mini').style.background = filho.cor;
+    }
+  }
+
+  const swatches = document.querySelectorAll('.color-swatch');
+  swatches.forEach((sw) => {
+    if (filho && filho.cor === sw.dataset.cor) sw.classList.add('selected');
+    sw.addEventListener('click', async () => {
+      swatches.forEach((s) => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      const cor = sw.dataset.cor;
+      document.querySelector('.profile-mini').style.background = cor;
+      if (filho) {
+        filho.cor = cor;
+        sessionStorage.setItem('filhoAtivo', JSON.stringify(filho));
+        try {
+          await updateFilho(filho.id, { cor });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  });
+
+  document.getElementById('editarBtn').addEventListener('click', () => {
+    showToast('Edição de informações em breve!');
+  });
+  document.getElementById('excluirBtn').addEventListener('click', async () => {
+    if (!filho) return;
+    const ok = confirm(`Tem certeza que deseja excluir o cadastro de ${filho.nome}? Essa ação não pode ser desfeita.`);
+    if (!ok) return;
+    try {
+      await deleteFilho(filho.id);
+      sessionStorage.removeItem('filhoAtivo');
+      showToast('Cadastro excluído.');
+      setTimeout(() => { window.location.href = 'home.html'; }, 1000);
+    } catch (err) {
+      console.error(err);
+      showToast('Não foi possível excluir. Tente novamente.');
+    }
+  });
+</script>
+</body>
+</html>

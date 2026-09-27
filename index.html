@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vale das Frutas</title>
+<meta name="description" content="Entre ou crie sua conta no Vale das Frutas">
+<meta name="theme-color" content="#FBF3E7">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <img class="logo" src="logo.png" alt="Vale das Frutas">
+    <div class="welcome-buttons">
+      <a class="btn btn-solid" href="login.html">Entrar</a>
+      <a class="btn btn-outline" href="cadastro.html">Criar conta</a>
+    </div>
+  </div>
+<script src="app.js"></script>
+<script type="module">
+  // Se já existir uma sessão ativa, pula direto para a área logada
+  import { watchAuthState } from './auth.js';
+  import { redirecionarAposLogin } from './filhos.js';
+  watchAuthState((user) => {
+    if (user) redirecionarAposLogin();
+  });
+</script>
+</body>
+</html>

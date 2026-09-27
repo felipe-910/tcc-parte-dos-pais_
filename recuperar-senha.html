@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recuperar senha — Vale das Frutas</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .recovery-hint { font-size: 13px; color: var(--text-light); margin: -6px 0 18px; line-height: 1.5; }
+  .recovery-note {
+    font-size: 12.5px; color: var(--text-light); line-height: 1.55;
+    background: #fff; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px; margin-top: 20px;
+  }
+  .recovery-note b { color: var(--text); }
+</style>
+</head>
+<body class="page-white">
+  <div class="wrap">
+    <a class="back" href="login.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <img class="logo small" src="logo.png" alt="Vale das Frutas">
+
+    <h1 class="sticker-heading" style="text-align:center;"><span class="sticker-line on-green">Recuperar senha</span></h1>
+    <p class="recovery-hint">Enviaremos um link de redefinição de senha para o seu e-mail cadastrado.</p>
+
+    <form id="formEmail" novalidate>
+      <div class="field">
+        <label for="emailRecuperacao">Email</label>
+        <input id="emailRecuperacao" name="emailRecuperacao" type="email" placeholder="Digite seu email" required>
+        <span class="error">Digite um email válido.</span>
+      </div>
+      <button class="cta" type="submit">Enviar link de recuperação</button>
+    </form>
+
+    <p class="switch-line">Lembrou a senha? <a href="login.html">Voltar ao login</a></p>
+
+    <div class="recovery-note" id="recoveryNote" hidden>
+      Se o email não chegar em alguns minutos: <b>verifique a caixa de spam/lixo eletrônico</b>,
+      confirme que digitou o email certo e lembre que <b>contas criadas com "Entrar com Google" não têm senha</b>
+      para redefinir — nesse caso, use sempre o botão do Google para entrar.
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { resetPassword, traduzErro } from './auth.js';
+
+  // Pré-preenche o email se veio da tela de login
+  const params = new URLSearchParams(window.location.search);
+  const emailPreenchido = params.get('email');
+  if (emailPreenchido) document.getElementById('emailRecuperacao').value = emailPreenchido;
+
+  const recoveryNote = document.getElementById('recoveryNote');
+
+  attachFormValidation(document.getElementById('formEmail'), async () => {
+    const email = document.getElementById('emailRecuperacao').value.trim();
+    const btn = document.querySelector('#formEmail .cta');
+    btn.disabled = true;
+    try {
+      await resetPassword(email);
+      showToast('Se esse email tiver uma conta, o link de recuperação foi enviado!');
+      recoveryNote.hidden = false;
+    } catch (err) {
+      showToast(traduzErro(err.code));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

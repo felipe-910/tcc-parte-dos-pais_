@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vamos conhecer seu pequeno! — Vale das Frutas</title>
+<meta name="theme-color" content="#FBF3E7">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="#" id="backLink" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+
+    <h1 class="sticker-heading">
+      <span class="sticker-line on-green">Vamos conhecer seu</span>
+      <span class="sticker-line on-green">pequeno!</span>
+    </h1>
+
+    <form id="novoPequenoForm" novalidate>
+      <div class="notched-field">
+        <span class="notch-label">Nome da criança</span>
+        <input id="nomeCrianca" name="nomeCrianca" type="text" placeholder="Nome" required minlength="2">
+      </div>
+
+      <div class="notched-field">
+        <span class="notch-label">Idade</span>
+        <select id="idadeCrianca" name="idadeCrianca" required>
+          <option value="" disabled selected>Selecione</option>
+        </select>
+      </div>
+
+      <button class="cta" type="submit">Continuar</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+
+  // Protege a tela: só quem está logado pode cadastrar um pequeno
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  // Popula o select de idade (1 a 12 anos)
+  const selectIdade = document.getElementById('idadeCrianca');
+  for (let i = 1; i <= 12; i++) {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i} ano${i > 1 ? 's' : ''}`;
+    selectIdade.appendChild(opt);
+  }
+
+  document.getElementById('backLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    history.back();
+  });
+
+  const form = document.getElementById('novoPequenoForm');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nome = document.getElementById('nomeCrianca').value.trim();
+    const idade = selectIdade.value;
+    if (nome.length < 2) {
+      showToast('Digite o nome da criança.');
+      return;
+    }
+    if (!idade) {
+      showToast('Selecione a idade.');
+      return;
+    }
+    // Guarda os dados temporariamente até o pai escolher o personagem
+    sessionStorage.setItem('pendingChild', JSON.stringify({ nome, idade }));
+    window.location.href = 'escolha-personagem.html';
+  });
+</script>
+</body>
+</html>

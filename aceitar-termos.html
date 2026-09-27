@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Termos de Uso — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .termos-caixa {
+    max-height: 40vh;
+    overflow-y: auto;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 18px 0 20px;
+  }
+  .termos-caixa p { margin-bottom: 12px; }
+  .termos-caixa p:last-child { margin-bottom: 0; }
+  .termos-caixa .tit { font-weight: 800; margin-bottom: 4px; }
+  .termos-welcome { text-align: center; color: var(--text-light); font-size: 14px; margin-top: 6px; }
+</style>
+</head>
+<body class="page-white">
+  <div class="wrap">
+    <img class="logo small" src="logo.png" alt="Vale das Frutas">
+
+    <h1 class="sticker-heading" style="text-align:center;">
+      <span class="sticker-line on-green">Antes de começar</span>
+    </h1>
+    <p class="termos-welcome">Precisamos que você leia e aceite nossos Termos de Uso para continuar.</p>
+
+    <div class="termos-caixa" id="termosCaixa">
+      <p class="tit">1. Uso da conta</p>
+      <p>Você é responsável por manter os dados de acesso da sua conta em segurança e por todas as informações cadastradas sobre os seus pequenos.</p>
+      <p class="tit">2. Dados dos pequenos</p>
+      <p>As informações cadastradas (metas, refeições e desempenho) são usadas apenas para o funcionamento do app e ficam visíveis somente para o responsável que as cadastrou.</p>
+      <p class="tit">3. Privacidade</p>
+      <p>Não compartilhamos os dados cadastrados com terceiros. Você pode excluir sua conta e seus dados a qualquer momento pela tela de perfil.</p>
+      <p class="tit">4. Alterações</p>
+      <p>Estes termos podem ser atualizados conforme o app evolui. Recomendamos revisá-los de tempos em tempos pela tela de perfil.</p>
+    </div>
+
+    <a href="termos.html" style="display:block;text-align:center;font-size:13px;font-weight:700;color:var(--green-text);margin-bottom:18px;">Ler termos completos</a>
+
+    <label class="terms">
+      <input type="checkbox" id="aceiteCheck">
+      <span>Li e aceito os Termos de Uso e a Política de Privacidade</span>
+    </label>
+
+    <button class="cta" id="aceitarBtn" type="button" disabled>Aceitar e continuar</button>
+    <button class="btn btn-outline" id="recusarBtn" type="button" style="margin-top:12px;">Recusar e sair</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState, logoutUser } from './auth.js';
+  import { aceitarTermos } from './termos.js';
+  import { listarFilhos } from './filhos.js';
+
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  const checkbox = document.getElementById('aceiteCheck');
+  const aceitarBtn = document.getElementById('aceitarBtn');
+
+  checkbox.addEventListener('change', () => {
+    aceitarBtn.disabled = !checkbox.checked;
+  });
+
+  aceitarBtn.addEventListener('click', async () => {
+    aceitarBtn.disabled = true;
+    try {
+      await aceitarTermos();
+      const filhos = await listarFilhos();
+      window.location.href = filhos.length > 0 ? 'home.html' : 'novo-pequeno.html';
+    } catch (err) {
+      console.error(err);
+      showToast('Não foi possível registrar o aceite. Tente novamente.');
+      aceitarBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('recusarBtn').addEventListener('click', async () => {
+    await logoutUser();
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>

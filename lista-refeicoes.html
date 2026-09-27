@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Refeições — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <div class="child-topbar">
+    <a class="back" href="crianca.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 class="sticker-heading"><span class="sticker-line on-green">Refeições</span></h1>
+    <span style="width:20px"></span>
+  </div>
+
+  <div class="child-body">
+    <div class="meal-filter-tabs">
+      <button class="meal-filter-tab active" data-filtro="Todas" type="button">Todas</button>
+      <button class="meal-filter-tab" data-filtro="Café da manhã" type="button">Café da manhã</button>
+      <button class="meal-filter-tab" data-filtro="Almoço" type="button">Almoço</button>
+      <button class="meal-filter-tab" data-filtro="Lanches" type="button">Lanches</button>
+      <button class="meal-filter-tab" data-filtro="Janta" type="button">Janta</button>
+    </div>
+
+    <div id="mealsList"></div>
+    <p class="empty-note meals-empty" id="emptyMealsNote">Nenhuma refeição registrada ainda.</p>
+
+    <button class="cta" id="novaRefeicaoBtn" type="button">+ Registrar refeição</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+  import { listarRefeicoes, deleteRefeicao } from './refeicoes.js';
+
+  watchAuthState((user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    carregarRefeicoes();
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) window.location.href = 'home.html';
+  const filho = raw ? JSON.parse(raw) : null;
+
+  const TIPOS = {
+    'Café da manhã': { classe: 'meal-cafe', icone: 'mdi:white-balance-sunny', cor: '5a4a1a' },
+    'Lanche da manhã': { classe: 'meal-lanche-manha', icone: 'mdi:food-apple', cor: '5a1a1a' },
+    'Almoço': { classe: 'meal-almoco', icone: 'mdi:silverware-fork-knife', cor: '1e3a25' },
+    'Lanche da tarde': { classe: 'meal-lanche-tarde', icone: 'mdi:cookie', cor: '5a3a10' },
+    'Janta': { classe: 'meal-janta', icone: 'mdi:weather-night', cor: '241a4d' }
+  };
+
+  let filtroAtual = 'Todas';
+  let refeicoes = [];
+
+  const mealsList = document.getElementById('mealsList');
+  const emptyMealsNote = document.getElementById('emptyMealsNote');
+
+  function formatarDataHora(timestamp) {
+    if (!timestamp || !timestamp.toDate) return { data: '—', hora: '' };
+    const d = timestamp.toDate();
+    const data = d.toLocaleDateString('pt-BR');
+    const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return { data, hora };
+  }
+
+  function passaNoFiltro(refeicao) {
+    if (filtroAtual === 'Todas') return true;
+    if (filtroAtual === 'Lanches') return refeicao.tipo === 'Lanche da manhã' || refeicao.tipo === 'Lanche da tarde';
+    return refeicao.tipo === filtroAtual;
+  }
+
+  function renderRefeicoes() {
+    const filtradas = refeicoes.filter(passaNoFiltro);
+    mealsList.innerHTML = '';
+    emptyMealsNote.style.display = filtradas.length ? 'none' : 'block';
+
+    filtradas.forEach((refeicao) => {
+      const info = TIPOS[refeicao.tipo] || TIPOS['Almoço'];
+      const { data, hora } = formatarDataHora(refeicao.criadoEm);
+      const descricao = (refeicao.alimentos || []).map((a) => a.nome).join(', ');
+
+      const card = document.createElement('div');
+      card.className = 'meal-card';
+      card.innerHTML = `
+        <div class="meal-card-icon ${info.classe}">
+          <img class="icon-img" src="${iconUrl(info.icone, info.cor)}" width="22" height="22" alt="">
+          <span></span>
+        </div>
+        <div class="meal-card-info">
+          <p class="meal-card-title"></p>
+          <p class="meal-card-desc"></p>
+        </div>
+        <div class="meal-card-side">
+          <span class="meal-card-datetime">${data}<br>- ${hora}</span>
+          <div class="meal-card-actions">
+            <button class="icon-action edit" type="button" aria-label="Editar"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 2L14 5L5 14H2V11L11 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+            <button class="icon-action delete" type="button" aria-label="Remover"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5H10V4M4.5 4L5 14H11L11.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+      `;
+      card.querySelector('.meal-card-icon span').textContent = refeicao.tipo;
+      card.querySelector('.meal-card-title').textContent = refeicao.tipo;
+      card.querySelector('.meal-card-desc').textContent = descricao || '—';
+
+      card.querySelector('.edit').addEventListener('click', () => {
+        sessionStorage.setItem('refeicaoEdicao', JSON.stringify(refeicao));
+        window.location.href = 'refeicoes.html';
+      });
+
+      card.querySelector('.delete').addEventListener('click', async () => {
+        if (!confirm('Remover essa refeição?')) return;
+        try {
+          await deleteRefeicao(refeicao.id);
+          refeicoes = refeicoes.filter((r) => r.id !== refeicao.id);
+          renderRefeicoes();
+          showToast('Refeição removida.');
+        } catch (err) {
+          console.error(err);
+          showToast('Não foi possível remover a refeição.');
+        }
+      });
+
+      mealsList.appendChild(card);
+    });
+  }
+
+  async function carregarRefeicoes() {
+    if (!filho) return;
+    try {
+      refeicoes = await listarRefeicoes(filho.id);
+      renderRefeicoes();
+    } catch (err) {
+      console.error(err);
+      showToast('Não foi possível carregar as refeições.');
+    }
+  }
+
+  document.querySelectorAll('.meal-filter-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.meal-filter-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      filtroAtual = tab.dataset.filtro;
+      renderRefeicoes();
+    });
+  });
+
+  document.getElementById('novaRefeicaoBtn').addEventListener('click', () => {
+    sessionStorage.removeItem('refeicaoEdicao');
+    window.location.href = 'refeicoes.html';
+  });
+</script>
+</body>
+</html>

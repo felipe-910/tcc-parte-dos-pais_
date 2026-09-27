@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metas — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <div class="child-topbar">
+    <a class="back" href="crianca.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 class="sticker-heading"><span class="sticker-line on-green">Metas</span></h1>
+    <span style="width:20px"></span>
+  </div>
+
+  <div class="child-body">
+    <div class="goal-tabs">
+      <button class="goal-tab active" data-tab="atuais" type="button">Atuais</button>
+      <button class="goal-tab" data-tab="concluidas" type="button">Concluídas</button>
+    </div>
+
+    <div id="goalsList"></div>
+    <p class="empty-note goals-empty" id="emptyGoalsNote">Nenhuma meta por aqui ainda.</p>
+
+    <button class="cta" id="novaMetaBtn" type="button">+ Nova meta</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+  import { listarMetas, updateMeta } from './metas.js';
+
+  watchAuthState((user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    carregarMetas();
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) window.location.href = 'home.html';
+  const filho = raw ? JSON.parse(raw) : null;
+
+  let abaAtual = 'atuais';
+  let metas = [];
+
+  const goalsList = document.getElementById('goalsList');
+  const emptyGoalsNote = document.getElementById('emptyGoalsNote');
+
+  // Decide se o título da meta deve ficar em texto claro ou escuro, conforme o brilho da cor de fundo escolhida
+  function corEhClara(hex) {
+    const h = (hex || '#f2a6a2').replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminancia > 0.75;
+  }
+
+  function renderGoals() {
+    const filtradas = metas.filter((m) => abaAtual === 'atuais' ? !m.concluida : m.concluida);
+    goalsList.innerHTML = '';
+    emptyGoalsNote.style.display = filtradas.length ? 'none' : 'block';
+    filtradas.forEach((meta) => {
+      const card = document.createElement('div');
+      card.className = 'goal-card';
+      card.innerHTML = `
+        <div class="goal-card-top" style="background:${meta.cor || '#f2a6a2'}">
+          <span class="goal-card-title"></span>
+          <button class="goal-check" type="button" aria-label="Marcar como concluída"></button>
+        </div>
+        <div class="goal-card-reward">Recompensa: <b></b></div>
+        <button class="goal-complete-btn" type="button"></button>
+      `;
+      const tituloEl = card.querySelector('.goal-card-title');
+      tituloEl.textContent = meta.titulo || 'Sem título';
+      if (corEhClara(meta.cor)) tituloEl.classList.add('dark');
+      card.querySelector('.goal-card-reward b').textContent = meta.recompensa || '—';
+
+      const checkBtn = card.querySelector('.goal-check');
+      const completeBtn = card.querySelector('.goal-complete-btn');
+
+      function atualizarBotoes() {
+        checkBtn.innerHTML = meta.concluida
+          ? '<img class="icon-img" src="https://api.iconify.design/mdi:check-bold.svg?color=%236fa981" width="22" height="22" alt="">'
+          : '<img class="icon-img" src="https://api.iconify.design/mdi:flag-variant-outline.svg?color=%23bbbbbb" width="22" height="22" alt="">';
+        completeBtn.classList.toggle('is-done', meta.concluida);
+        completeBtn.innerHTML = meta.concluida
+          ? '<img class="icon-img" src="https://api.iconify.design/mdi:refresh.svg?color=%23a3856f" width="18" height="18" alt="">Reabrir meta'
+          : '<img class="icon-img" src="https://api.iconify.design/mdi:check-circle-outline.svg?color=%236fa981" width="18" height="18" alt="">Marcar como concluída';
+      }
+      atualizarBotoes();
+
+      async function alternarConclusao() {
+        const novoStatus = !meta.concluida;
+        checkBtn.disabled = true;
+        completeBtn.disabled = true;
+        try {
+          await updateMeta(meta.id, { concluida: novoStatus });
+          meta.concluida = novoStatus;
+          showToast(novoStatus ? 'Meta concluída! Veja na aba "Concluídas".' : 'Meta reaberta! Ela voltou para "Atuais".');
+          renderGoals();
+        } catch (err) {
+          console.error(err);
+          showToast('Não foi possível atualizar a meta.');
+          checkBtn.disabled = false;
+          completeBtn.disabled = false;
+        }
+      }
+
+      checkBtn.addEventListener('click', alternarConclusao);
+      completeBtn.addEventListener('click', alternarConclusao);
+      goalsList.appendChild(card);
+    });
+  }
+
+  async function carregarMetas() {
+    if (!filho) return;
+    try {
+      metas = await listarMetas(filho.id);
+      renderGoals();
+    } catch (err) {
+      console.error(err);
+      showToast('Não foi possível carregar as metas.');
+    }
+  }
+
+  document.querySelectorAll('.goal-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.goal-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      abaAtual = tab.dataset.tab;
+      renderGoals();
+    });
+  });
+
+  document.getElementById('novaMetaBtn').addEventListener('click', () => {
+    window.location.href = 'adicionar-meta.html';
+  });
+</script>
+</body>
+</html>

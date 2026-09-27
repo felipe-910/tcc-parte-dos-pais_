@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minha conta — Vale das Frutas</title>
+<meta name="description" content="Área logada do Vale das Frutas">
+<meta name="theme-color" content="#FBF3E7">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <img class="logo small" src="logo.png" alt="Vale das Frutas">
+
+    <div class="profile-card">
+      <img class="avatar" id="avatar" src="icons/icon-192.png" alt="Foto do perfil">
+      <h2 id="nomeUsuario">Carregando...</h2>
+      <p class="email-line" id="emailUsuario"></p>
+    </div>
+
+    <form id="editForm" novalidate>
+      <div class="field">
+        <label for="novoNome">Nome</label>
+        <input id="novoNome" name="novoNome" type="text" placeholder="Seu nome" minlength="2" required>
+        <span class="error">Digite um nome válido.</span>
+      </div>
+      <button class="cta" type="submit">Salvar alterações</button>
+    </form>
+
+    <button class="btn btn-outline" id="logoutBtn" type="button">Sair da conta</button>
+    <button class="btn btn-danger" id="deleteBtn" type="button">Excluir conta</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState, updateUserProfile, deleteAccount, logoutUser, traduzErro } from './auth.js';
+
+  const nomeEl = document.getElementById('nomeUsuario');
+  const emailEl = document.getElementById('emailUsuario');
+  const avatarEl = document.getElementById('avatar');
+  const novoNomeInput = document.getElementById('novoNome');
+
+  // Protege a tela: só quem está logado pode ver
+  watchAuthState((user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    nomeEl.textContent = user.displayName || 'Sem nome cadastrado';
+    emailEl.textContent = user.email || '';
+    novoNomeInput.value = user.displayName || '';
+    if (user.photoURL) avatarEl.src = user.photoURL;
+  });
+
+  attachFormValidation(document.getElementById('editForm'), async () => {
+    const novoNome = novoNomeInput.value.trim();
+    try {
+      await updateUserProfile({ nome: novoNome });
+      nomeEl.textContent = novoNome;
+      showToast('Perfil atualizado!');
+    } catch (err) {
+      showToast(traduzErro(err.code));
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await logoutUser();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', async () => {
+    const confirmar = confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');
+    if (!confirmar) return;
+    try {
+      await deleteAccount();
+      showToast('Conta excluída.');
+      setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+    } catch (err) {
+      showToast(traduzErro(err.code));
+      if (err.code === 'auth/requires-recent-login') {
+        setTimeout(() => { window.location.href = 'login.html'; }, 1800);
+      }
+    }
+  });
+</script>
+</body>
+</html>

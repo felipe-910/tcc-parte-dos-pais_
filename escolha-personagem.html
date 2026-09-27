@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escolha o personagem — Vale das Frutas</title>
+<meta name="theme-color" content="#FBF3E7">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="novo-pequeno.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+
+    <h1 class="sticker-heading">
+      <span class="sticker-line on-green">Escolha o personagem</span>
+    </h1>
+
+    <div class="avatar-grid">
+      <button class="avatar-option" type="button" data-avatar="1" aria-label="Personagem 1" style="background-image:url('avatars/avatar1.jpg')"></button>
+      <button class="avatar-option" type="button" data-avatar="2" aria-label="Personagem 2" style="background-image:url('avatars/avatar2.jpg')"></button>
+    </div>
+
+    <button class="cta" id="continuarBtn" type="button">Continuar</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+  import { addFilho } from './filhos.js';
+
+  // Protege a tela: só quem está logado pode chegar aqui
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  // Recupera nome/idade da tela anterior; se não existir, volta pro passo 1
+  const pendingRaw = sessionStorage.getItem('pendingChild');
+  if (!pendingRaw) {
+    window.location.href = 'novo-pequeno.html';
+  }
+  const pending = pendingRaw ? JSON.parse(pendingRaw) : null;
+
+  let selecionado = null;
+  const opcoes = document.querySelectorAll('.avatar-option');
+  opcoes.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      opcoes.forEach((b) => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selecionado = btn.dataset.avatar;
+    });
+  });
+
+  const continuarBtn = document.getElementById('continuarBtn');
+  continuarBtn.addEventListener('click', async () => {
+    if (!selecionado) {
+      showToast('Escolha um personagem para continuar.');
+      return;
+    }
+    continuarBtn.disabled = true;
+    try {
+      await addFilho({ nome: pending.nome, idade: pending.idade, avatar: selecionado });
+      sessionStorage.removeItem('pendingChild');
+      showToast('Pequeno cadastrado com sucesso!');
+      setTimeout(() => { window.location.href = 'home.html'; }, 800);
+    } catch (err) {
+      showToast('Não foi possível salvar. Tente novamente.');
+      console.error(err);
+      continuarBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

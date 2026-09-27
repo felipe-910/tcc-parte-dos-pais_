@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <header class="app-header">
+    <button class="icon-btn" id="menuBtn" aria-label="Menu" type="button">
+      <svg width="26" height="20" viewBox="0 0 26 20" fill="none"><rect width="26" height="3" rx="1.5" fill="#fff"/><rect y="8.5" width="26" height="3" rx="1.5" fill="#fff"/><rect y="17" width="26" height="3" rx="1.5" fill="#fff"/></svg>
+    </button>
+    <div class="header-text">
+      <h1 class="sticker-heading"><span class="sticker-line on-green">Olá, <span id="nomeResponsavel">Responsável</span>!</span></h1>
+      <p class="subgreeting">Que bom ter você aqui!</p>
+    </div>
+    <button class="icon-btn" id="bellBtn" aria-label="Notificações" type="button">
+      <svg width="22" height="24" viewBox="0 0 22 24" fill="none"><path d="M11 24c1.66 0 3-1.34 3-3H8c0 1.66 1.34 3 3 3zm8-7V10c0-4.07-2.13-7.44-6-8.33V1a2 2 0 10-4 0v.67C5.13 2.56 3 5.92 3 10v7l-2 2v1h20v-1l-2-2z" fill="#fff"/></svg>
+    </button>
+
+  </header>
+
+  <div class="account-overlay" id="accountOverlay" hidden>
+    <button class="overlay-close" id="closeAccountBtn" type="button" aria-label="Fechar">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 2L20 20M20 2L2 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="account-header">
+      <div class="account-avatar" id="accountAvatar"></div>
+      <div class="account-id">
+        <span class="account-name" id="accountName">Responsável</span>
+        <span class="account-email" id="accountEmail"></span>
+      </div>
+    </div>
+    <div class="account-menu-list">
+      <button class="account-card" id="accGoPerfil" type="button" style="border-color:#bfe0cb">
+        <span class="account-card-icon" style="color:#6fa981"><img class="icon-img" src="https://api.iconify.design/mdi:account-outline.svg?color=%236fa981" width="26" height="26" alt=""></span>
+        <span class="account-card-text">
+          <span class="account-card-title">Perfil</span>
+          <span class="account-card-sub">Gerencie suas informações</span>
+        </span>
+        <span class="account-card-chevron">&#8250;</span>
+      </button>
+      <a class="account-card" href="termos.html" style="border-color:#f5c9c6">
+        <span class="account-card-icon" style="color:#f2726c"><img class="icon-img" src="https://api.iconify.design/mdi:file-document-outline.svg?color=%23f2726c" width="26" height="26" alt=""></span>
+        <span class="account-card-text">
+          <span class="account-card-title">Termos de Uso</span>
+          <span class="account-card-sub">Leia nossos termos</span>
+        </span>
+        <span class="account-card-chevron">&#8250;</span>
+      </a>
+      <button class="account-card" id="accLogoutBtn" type="button" style="border-color:#cfd2ec">
+        <span class="account-card-icon" style="color:#9098cc"><img class="icon-img" src="https://api.iconify.design/mdi:logout.svg?color=%239098cc" width="26" height="26" alt=""></span>
+        <span class="account-card-text">
+          <span class="account-card-title">Sair</span>
+          <span class="account-card-sub">Encerrar sessão</span>
+        </span>
+        <span class="account-card-chevron">&#8250;</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="home-card">
+    <div class="hang-tag"><span>Seus pequenos</span></div>
+
+    <div class="kids-list" id="kidsList"></div>
+
+    <button class="add-kid-btn" id="addKidBtn" type="button">+ Adicionar criança</button>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState, logoutUser } from './auth.js';
+  import { listarFilhos } from './filhos.js';
+
+  const CORES = ['#f2a6a2', '#9098cc'];
+
+  watchAuthState((user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    document.getElementById('nomeResponsavel').textContent = user.displayName || 'Responsável';
+    document.getElementById('accountName').textContent = user.displayName || 'Responsável';
+    document.getElementById('accountEmail').textContent = user.email || '';
+    const fotoSalva = localStorage.getItem(`perfil_foto_${user.uid}`);
+    if (fotoSalva) {
+      document.getElementById('accountAvatar').style.backgroundImage = `url('${fotoSalva}')`;
+    } else if (user.photoURL) {
+      document.getElementById('accountAvatar').style.backgroundImage = `url('${user.photoURL}')`;
+    }
+    carregarFilhos();
+  });
+
+  async function carregarFilhos() {
+    const lista = document.getElementById('kidsList');
+    lista.innerHTML = '';
+    try {
+      const filhos = await listarFilhos();
+      filhos.forEach((filho, i) => {
+        const card = document.createElement('div');
+        card.className = 'kid-card';
+        card.style.background = CORES[i % CORES.length];
+        card.innerHTML = `
+          <div class="kid-top">
+            <div class="kid-avatar"></div>
+            <div class="kid-info">
+              <span class="kid-name"></span>
+              <span class="kid-age"></span>
+            </div>
+            <span class="kid-chevron">&#8250;</span>
+          </div>
+          <button class="kid-enter-btn" type="button">Entrar <span>&#8250;</span></button>
+        `;
+        card.querySelector('.kid-name').textContent = filho.nome;
+        card.querySelector('.kid-age').textContent = `${filho.idade} anos`;
+        const avatarEl = card.querySelector('.kid-avatar');
+        if (filho.avatar) {
+          avatarEl.style.backgroundImage = `url('avatars/avatar${filho.avatar}.jpg')`;
+        }
+        card.querySelector('.kid-enter-btn').addEventListener('click', () => {
+          sessionStorage.setItem('filhoAtivo', JSON.stringify({ id: filho.id, nome: filho.nome, idade: filho.idade, avatar: filho.avatar, cor: filho.cor || CORES[i % CORES.length] }));
+          window.location.href = 'crianca.html';
+        });
+        lista.appendChild(card);
+      });
+    } catch (err) {
+      console.error(err);
+      showToast('Não foi possível carregar os pequenos.');
+    }
+  }
+
+  document.getElementById('addKidBtn').addEventListener('click', () => {
+    window.location.href = 'novo-pequeno.html';
+  });
+
+  document.getElementById('bellBtn').addEventListener('click', () => {
+    showToast('Notificações em breve!');
+  });
+
+  const menuBtn = document.getElementById('menuBtn');
+  const accountOverlay = document.getElementById('accountOverlay');
+  menuBtn.addEventListener('click', () => {
+    accountOverlay.hidden = false;
+  });
+  document.getElementById('closeAccountBtn').addEventListener('click', () => {
+    accountOverlay.hidden = true;
+  });
+  document.getElementById('accGoPerfil').addEventListener('click', () => {
+    window.location.href = 'perfil.html';
+  });
+  document.getElementById('accLogoutBtn').addEventListener('click', async () => {
+    await logoutUser();
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>

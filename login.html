@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entrar — Vale das Frutas</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-white">
+  <div class="wrap">
+    <a class="back" href="index.html" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <img class="logo small" src="logo.png" alt="Vale das Frutas">
+
+    <div class="tabs">
+      <a class="tab active" href="login.html">Login</a>
+      <a class="tab inactive" href="cadastro.html">Cadastro</a>
+    </div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="Digite seu email" required>
+        <span class="error">Digite um email válido.</span>
+      </div>
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" placeholder="Digite sua senha" required minlength="6">
+        <span class="error">Digite sua senha.</span>
+      </div>
+
+      <a class="forgot" href="#" id="forgotLink">Esqueceu sua senha?</a>
+
+      <button class="cta" type="submit">Entrar</button>
+    </form>
+
+    <p class="or-line">Ou entre com:</p>
+    <button class="google-btn" id="googleBtn" aria-label="Entrar com Google" type="button">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20.4H24v7.2h11.3C33.6 32.1 29.2 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.1-5.1C33.9 6 29.2 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l5.9 4.3C13.9 15.6 18.6 12 24 12c3.1 0 5.9 1.2 8 3.1l5.1-5.1C33.9 6 29.2 4 24 4c-7.4 0-13.7 4.2-16.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.1 0 9.8-2 13.3-5.2l-6.2-5.2C29.1 35.6 26.7 36.5 24 36.5c-5.2 0-9.6-3.4-11.3-8.1l-6.2 4.8C9.7 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20.4H24v7.2h11.3c-.9 2.6-2.6 4.7-4.9 6.2l6.2 5.2C40.4 36.1 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+    </button>
+
+    <p class="switch-line">Ainda não tem conta? <a href="cadastro.html">Cadastre-se</a></p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { loginUser, loginWithGoogle, traduzErro } from './auth.js';
+  import { redirecionarAposLogin } from './filhos.js';
+
+  const form = document.getElementById('loginForm');
+  const cta = form.querySelector('.cta');
+
+  attachFormValidation(form, async () => {
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
+    cta.disabled = true;
+    try {
+      await loginUser(email, senha);
+      showToast('Login realizado com sucesso!');
+      setTimeout(redirecionarAposLogin, 800);
+    } catch (err) {
+      showToast(traduzErro(err.code));
+    } finally {
+      cta.disabled = false;
+    }
+  });
+
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    try {
+      await loginWithGoogle();
+      showToast('Login com Google realizado!');
+      setTimeout(redirecionarAposLogin, 800);
+    } catch (err) {
+      showToast(traduzErro(err.code));
+    }
+  });
+
+  document.getElementById('forgotLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    window.location.href = 'recuperar-senha.html' + (email ? `?email=${encodeURIComponent(email)}` : '');
+  });
+</script>
+</body>
+</html>

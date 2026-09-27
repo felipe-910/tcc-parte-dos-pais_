@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel — Vale das Frutas</title>
+<meta name="theme-color" content="#6fa981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <button class="drag-topbar" id="voltarHome" type="button" aria-label="Voltar para a home">
+    <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M2 2L11 12L20 2" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="child-body">
+    <div class="profile-mini">
+      <div class="kid-avatar" id="kidAvatar"></div>
+      <div class="kid-info">
+        <span class="kid-name" id="kidNome">—</span>
+        <span class="kid-age" id="kidIdade">—</span>
+        <div class="level-row">
+          <span class="level-label" id="kidNivel">Nível 1</span>
+          <span class="level-points" id="kidPontos">0/500pts</span>
+        </div>
+        <div class="level-bar-track"><div class="level-bar-fill" id="kidBarra" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="menu-list">
+      <button class="menu-btn" id="btnDesempenho" type="button">
+        <span class="menu-icon"><img class="icon-img" src="https://api.iconify.design/mdi:chart-line.svg?color=%23f2726c" width="22" height="22" alt=""></span>
+        <span class="label">Desempenho</span>
+        <span class="chevron">&#8250;</span>
+      </button>
+      <button class="menu-btn" id="btnRefeicoes" type="button">
+        <span class="menu-icon"><img class="icon-img" src="https://api.iconify.design/mdi:silverware-fork-knife.svg?color=%23f2726c" width="22" height="22" alt=""></span>
+        <span class="label">Registrar refeições</span>
+        <span class="chevron">&#8250;</span>
+      </button>
+      <button class="menu-btn" id="btnMetas" type="button">
+        <span class="menu-icon"><img class="icon-img" src="https://api.iconify.design/mdi:trophy.svg?color=%23f2726c" width="22" height="22" alt=""></span>
+        <span class="label">Metas</span>
+        <span class="chevron">&#8250;</span>
+      </button>
+      <button class="menu-btn" id="btnConfig" type="button">
+        <span class="menu-icon"><img class="icon-img" src="https://api.iconify.design/mdi:cog.svg?color=%23f2726c" width="22" height="22" alt=""></span>
+        <span class="label">Configurações</span>
+        <span class="chevron">&#8250;</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script type="module">
+  import { watchAuthState } from './auth.js';
+
+  watchAuthState((user) => {
+    if (!user) window.location.href = 'login.html';
+  });
+
+  const raw = sessionStorage.getItem('filhoAtivo');
+  if (!raw) {
+    window.location.href = 'home.html';
+  }
+  const filho = raw ? JSON.parse(raw) : null;
+
+  if (filho) {
+    document.getElementById('kidNome').textContent = filho.nome;
+    document.getElementById('kidIdade').textContent = `${filho.idade} anos`;
+    if (filho.avatar) {
+      document.getElementById('kidAvatar').style.backgroundImage = `url('avatars/avatar${filho.avatar}.jpg')`;
+    }
+    if (filho.cor) {
+      document.querySelector('.profile-mini').style.background = filho.cor;
+    }
+  }
+
+  document.getElementById('voltarHome').addEventListener('click', () => {
+    window.location.href = 'home.html';
+  });
+
+  document.getElementById('btnDesempenho').addEventListener('click', () => {
+    window.location.href = 'desempenho.html';
+  });
+  document.getElementById('btnRefeicoes').addEventListener('click', () => {
+    window.location.href = 'lista-refeicoes.html';
+  });
+  document.getElementById('btnConfig').addEventListener('click', () => {
+    window.location.href = 'configuracoes.html';
+  });
+  document.getElementById('btnMetas').addEventListener('click', () => {
+    window.location.href = 'metas.html';
+  });
+</script>
+</body>
+</html>
